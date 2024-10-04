@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package preview;
+
+option go_package = "./example";
+
+service PreviewService {
+  rpc GetPreviewImage (GetPreviewImageRequest) returns (GetPreviewImageResponse);
+}
+
+message GetPreviewImageRequest {
+  string url = 1;
+}
+
+message GetPreviewImageResponse {
+  bytes image = 1;
+}
