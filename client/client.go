@@ -27,7 +27,9 @@ func main() {
 
 	client := pb.NewPreviewServiceClient(conn)
 
-	if len(os.Args) < 2 {
+	async := makeFlags()
+
+	if len(os.Args) < 2 || len(flag.Args()) == 0{
 		log.Fatalln("count of args must be > 0")
 	}
 
@@ -35,8 +37,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("could not create directory: %v", err)
 	}
-
-	async := makeFlags()
 
 	if *async {
 		req := &pb.GetPreviewImageSliceRequest{Urls: flag.Args()}
@@ -46,12 +46,13 @@ func main() {
 		}
 		err = saveImages(resp.GetImages(), directory)
 	} else {
-		req := &pb.GetPreviewImageRequest{Url: flag.Args()[1]}
+		req := &pb.GetPreviewImageRequest{Url: os.Args[1]}
 		resp, err := client.GetPreviewImage(context.Background(), req)
 		if err != nil {
 			log.Fatalf("could not get preview image: %v", err)
 		}
-		err = saveImage(resp.GetImage(), directory)
+		filePath := filepath.Join(directory, fmt.Sprintf("preview.jpg"))
+		err = saveImage(resp.GetImage(), filePath)
 	}
 
 	fmt.Println("Images saved in directory \"images\"")
