@@ -4,7 +4,7 @@
 // - protoc             v5.28.2
 // source: test_grpc.proto
 
-package example
+package test
 
 import (
 	context "context"
@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	PreviewService_GetPreviewImage_FullMethodName = "/preview.PreviewService/GetPreviewImage"
+	PreviewService_GetPreviewImage_FullMethodName      = "/preview.PreviewService/GetPreviewImage"
+	PreviewService_GetPreviewImageSlice_FullMethodName = "/preview.PreviewService/GetPreviewImageSlice"
 )
 
 // PreviewServiceClient is the client API for PreviewService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PreviewServiceClient interface {
 	GetPreviewImage(ctx context.Context, in *GetPreviewImageRequest, opts ...grpc.CallOption) (*GetPreviewImageResponse, error)
+	GetPreviewImageSlice(ctx context.Context, in *GetPreviewImageSliceRequest, opts ...grpc.CallOption) (*GetPreviewImageSliceResponse, error)
 }
 
 type previewServiceClient struct {
@@ -47,15 +49,25 @@ func (c *previewServiceClient) GetPreviewImage(ctx context.Context, in *GetPrevi
 	return out, nil
 }
 
+func (c *previewServiceClient) GetPreviewImageSlice(ctx context.Context, in *GetPreviewImageSliceRequest, opts ...grpc.CallOption) (*GetPreviewImageSliceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPreviewImageSliceResponse)
+	err := c.cc.Invoke(ctx, PreviewService_GetPreviewImageSlice_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PreviewServiceServer is the server API for PreviewService service.
-// All implementations must embed UnimplementedPreviewServiceServer
+// All implementations should embed UnimplementedPreviewServiceServer
 // for forward compatibility.
 type PreviewServiceServer interface {
 	GetPreviewImage(context.Context, *GetPreviewImageRequest) (*GetPreviewImageResponse, error)
-	mustEmbedUnimplementedPreviewServiceServer()
+	GetPreviewImageSlice(context.Context, *GetPreviewImageSliceRequest) (*GetPreviewImageSliceResponse, error)
 }
 
-// UnimplementedPreviewServiceServer must be embedded to have
+// UnimplementedPreviewServiceServer should be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
@@ -65,8 +77,10 @@ type UnimplementedPreviewServiceServer struct{}
 func (UnimplementedPreviewServiceServer) GetPreviewImage(context.Context, *GetPreviewImageRequest) (*GetPreviewImageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPreviewImage not implemented")
 }
-func (UnimplementedPreviewServiceServer) mustEmbedUnimplementedPreviewServiceServer() {}
-func (UnimplementedPreviewServiceServer) testEmbeddedByValue()                        {}
+func (UnimplementedPreviewServiceServer) GetPreviewImageSlice(context.Context, *GetPreviewImageSliceRequest) (*GetPreviewImageSliceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPreviewImageSlice not implemented")
+}
+func (UnimplementedPreviewServiceServer) testEmbeddedByValue() {}
 
 // UnsafePreviewServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to PreviewServiceServer will
@@ -104,6 +118,24 @@ func _PreviewService_GetPreviewImage_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PreviewService_GetPreviewImageSlice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPreviewImageSliceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PreviewServiceServer).GetPreviewImageSlice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PreviewService_GetPreviewImageSlice_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PreviewServiceServer).GetPreviewImageSlice(ctx, req.(*GetPreviewImageSliceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PreviewService_ServiceDesc is the grpc.ServiceDesc for PreviewService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +146,10 @@ var PreviewService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPreviewImage",
 			Handler:    _PreviewService_GetPreviewImage_Handler,
+		},
+		{
+			MethodName: "GetPreviewImageSlice",
+			Handler:    _PreviewService_GetPreviewImageSlice_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -3,6 +3,7 @@ module github.com/SerzhLimon/test_grpc
 go 1.22.3
 
 require (
+	github.com/pkg/errors v0.9.1
 	google.golang.org/grpc v1.67.1
 	google.golang.org/protobuf v1.34.2
 )

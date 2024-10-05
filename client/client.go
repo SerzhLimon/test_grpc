@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -18,37 +19,60 @@ const (
 )
 
 func main() {
-	conn, err := grpc.DialContext(context.Background(), ":8000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(":8000", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		log.Fatalln("failed to connect grpc server", err)
 	}
 	defer conn.Close()
 
 	client := pb.NewPreviewServiceClient(conn)
-	fmt.Println("Input url:")
-	var inputUrl string
-	fmt.Scan(&inputUrl)
-	req := &pb.GetPreviewImageRequest{Url: inputUrl}
-	resp, err := client.GetPreviewImage(context.Background(), req)
-	if err != nil {
-		log.Fatalf("could not get preview image: %v", err)
+
+	if len(os.Args) < 2 {
+		log.Fatalln("count of args must be > 0")
 	}
-	
-	filename := "preview.jpg"
-	filePath := filepath.Join(directory, filename)
 
 	err = os.MkdirAll(directory, 0755)
 	if err != nil {
 		log.Fatalf("could not create directory: %v", err)
 	}
-	err = saveImage(resp.GetImage(), filePath)
-	if err != nil {
-		log.Fatalf("could not save image: %v", err)
+
+	async := makeFlags()
+
+	if *async {
+		req := &pb.GetPreviewImageSliceRequest{Urls: flag.Args()}
+		resp, err := client.GetPreviewImageSlice(context.Background(), req)
+		if err != nil {
+			log.Fatalf("could not get preview image: %v", err)
+		}
+		err = saveImages(resp.GetImages(), directory)
+	} else {
+		req := &pb.GetPreviewImageRequest{Url: flag.Args()[1]}
+		resp, err := client.GetPreviewImage(context.Background(), req)
+		if err != nil {
+			log.Fatalf("could not get preview image: %v", err)
+		}
+		err = saveImage(resp.GetImage(), directory)
 	}
 
-	fmt.Println("Image saved as preview.jpg")
+	fmt.Println("Images saved in directory \"images\"")
 }
 
 func saveImage(image []byte, filePath string) error {
 	return os.WriteFile(filePath, image, 0644)
+}
+
+func saveImages(images [][]byte, directory string) error {
+	for i, image := range images {
+		filePath := filepath.Join(directory, fmt.Sprintf("preview%d.jpg", i+1))
+		if err := saveImage(image, filePath); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func makeFlags() *bool {
+	asyncFlag := flag.Bool("async", false, "")
+	flag.Parse()
+	return asyncFlag
 }

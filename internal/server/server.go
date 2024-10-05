@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 
 	"google.golang.org/grpc"
 
@@ -11,7 +10,6 @@ import (
 )
 
 type server struct {
-	pb.UnimplementedPreviewServiceServer
 	uc usecase.Usecase
 }
 
@@ -28,17 +26,22 @@ func NewCore() *grpc.Server {
 }
 
 func (s *server) GetPreviewImage(ctx context.Context, req *pb.GetPreviewImageRequest) (*pb.GetPreviewImageResponse, error) {
-	videoURL := req.GetUrl()
-	videoID, err := s.uc.ExtractVideoID(videoURL)
-	if err != nil {
-		return nil, fmt.Errorf("invalid YouTube URL")
-	}
 
-	previewURL := fmt.Sprintf("https://img.youtube.com/vi/%s/0.jpg", videoID)
-	previewImage, err := s.uc.DownloadImage(previewURL)
+	previewImage, err := s.uc.GetPreviewImage(req.GetUrl())
 	if err != nil {
-		return nil, fmt.Errorf("failed to download preview image")
+		return &pb.GetPreviewImageResponse{}, err
 	}
 
 	return &pb.GetPreviewImageResponse{Image: previewImage}, nil
+}
+
+func (s *server) GetPreviewImageSlice(
+	ctx context.Context, 
+	req *pb.GetPreviewImageSliceRequest) (*pb.GetPreviewImageSliceResponse, error) {
+
+	previewImages, err := s.uc.GetPreviewImageSlice(req.GetUrls())
+	if err != nil {
+		return &pb.GetPreviewImageSliceResponse{}, err
+	}
+	return &pb.GetPreviewImageSliceResponse{Images: previewImages}, nil
 }
