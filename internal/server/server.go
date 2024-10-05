@@ -5,21 +5,18 @@ import (
 	"fmt"
 
 	pb "github.com/SerzhLimon/test_grpc/test_grpc_proto"
+	uc "github.com/SerzhLimon/test_grpc/usecase"
 )
 
-type ServerHandlers interface {
-	GetPreviewImage()
-}
 
 type server struct {
 	core pb.UnimplementedPreviewServiceServer
-	handlers ServerHandlers
+	uc 
 }
 
-func NewServer(core pb.UnimplementedPreviewServiceServer, handlers ServerHandlers) *server {
+func NewServer(core pb.UnimplementedPreviewServiceServer) *server {
 	return &server{
 		core: core,
-		handlers: handlers,
 	}
 }
 
