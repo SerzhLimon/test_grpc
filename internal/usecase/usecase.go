@@ -7,12 +7,9 @@ import (
 	"regexp"
 )
 
-type Usecase interface {
-	ExtractVideoID(videoURL string) (string, error)
-	DownloadImage(imageURL string) ([]byte, error)
-}
+type Usecase struct {}
 
-func ExtractVideoID(videoURL string) (string, error) {
+func (u *Usecase) ExtractVideoID(videoURL string) (string, error) {
 	re := regexp.MustCompile(`(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})`)
 	matches := re.FindStringSubmatch(videoURL)
 	if len(matches) < 2 {
@@ -21,7 +18,7 @@ func ExtractVideoID(videoURL string) (string, error) {
 	return matches[1], nil
 }
 
-func DownloadImage(imageURL string) ([]byte, error) {
+func (u *Usecase) DownloadImage(imageURL string) ([]byte, error) {
 	resp, err := http.Get(imageURL)
 	if err != nil {
 		return nil, err

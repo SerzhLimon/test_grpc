@@ -1,30 +1,22 @@
 package main
 
 import (
-	// "context"
 	"fmt"
 	"net"
 
-	"google.golang.org/grpc"
-
-	pb "github.com/SerzhLimon/test_grpc/test_grpc_proto"
-	// serv "github.com/SerzhLimon/test_grpc/internal/server"
+	"github.com/SerzhLimon/test_grpc/internal/server"
 )
 
-
-
-
 func main() {
-	lis, err := net.Listen("tcp", ":8080")
+	lis, err := net.Listen("tcp", ":8000")
 	if err != nil {
 		fmt.Printf("failed to listen: %v\n", err)
 		return
 	}
 
-	s := grpc.NewServer()
-	pb.RegisterPreviewServiceServer(s, &server{})
+	s := server.NewCore()
 
-	fmt.Println("Server is running on :8080")
+	fmt.Println("Server is running on :8000")
 	if err := s.Serve(lis); err != nil {
 		fmt.Printf("failed to serve: %v\n", err)
 	}

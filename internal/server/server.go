@@ -4,20 +4,27 @@ import (
 	"context"
 	"fmt"
 
-	uc "github.com/SerzhLimon/test_grpc/internal/usecase"
+	"google.golang.org/grpc"
+
+	usecase "github.com/SerzhLimon/test_grpc/internal/usecase"
 	pb "github.com/SerzhLimon/test_grpc/test_grpc_proto"
 )
 
 type server struct {
-	core pb.UnimplementedPreviewServiceServer
-	uc   uc.Usecase
+	pb.UnimplementedPreviewServiceServer
+	uc usecase.Usecase
 }
 
-func NewServer(core pb.UnimplementedPreviewServiceServer, uc uc.Usecase) *server {
+func NewServer(usecase usecase.Usecase) *server {
 	return &server{
-		core: core,
-		uc:   uc.Usecase,
+		uc: usecase,
 	}
+}
+
+func NewCore() *grpc.Server {
+	s := grpc.NewServer()
+	pb.RegisterPreviewServiceServer(s, NewServer(usecase.Usecase{}))
+	return s
 }
 
 func (s *server) GetPreviewImage(ctx context.Context, req *pb.GetPreviewImageRequest) (*pb.GetPreviewImageResponse, error) {
