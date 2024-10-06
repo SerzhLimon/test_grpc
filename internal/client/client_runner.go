@@ -29,7 +29,7 @@ func main() {
 
 	async := makeFlags()
 
-	if len(os.Args) < 2 || len(flag.Args()) == 0{
+	if len(os.Args) < 2 || len(flag.Args()) == 0 {
 		log.Fatalln("count of args must be > 0")
 	}
 
