@@ -3,6 +3,7 @@ package usecase
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"sync"
@@ -10,38 +11,62 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Usecase struct{}
+type Cashe interface {
+	Get(key string) ([]byte, error)
+	Set(key string, value []byte) error
+}
+
+type Usecase struct {
+	cashe Cashe
+}
+
+func NewUsecase(cashe Cashe) *Usecase {
+	return &Usecase{
+		cashe: cashe,
+	}
+}
 
 func (u *Usecase) GetPreviewImage(url string) ([]byte, error) {
-	var result []byte
+	var image []byte
 	videoID, err := u.extractVideoID(url)
 	if err != nil {
-		return result, fmt.Errorf("invalid YouTube URL")
+		return image, fmt.Errorf("invalid YouTube URL")
 	}
-	result, err = u.downloadImage(fmt.Sprintf("https://img.youtube.com/vi/%s/0.jpg", videoID))
+	
+	image, err = u.cashe.Get(videoID)
+	if err == nil {
+		fmt.Println("return image from storage")
+		return image, nil
+	}
+
+	image, err = u.downloadImage(fmt.Sprintf("https://img.youtube.com/vi/%s/0.jpg", videoID))
 	if err != nil {
-		return result, fmt.Errorf("failed to download preview image")
+		return image, fmt.Errorf("failed to download preview image")
 	}
-	return result, nil
+
+	if err = u.cashe.Set(videoID, image); err != nil {
+		log.Println("can't save image in storage", err)
+	}
+	return image, nil
 }
 
 func (u *Usecase) GetPreviewImageSlice(urls []string) ([][]byte, error) {
-	var result [][]byte
+	var images [][]byte
 	var wg sync.WaitGroup
 	var m sync.Mutex
 	var errChan = make(chan error, len(urls))
 
 	wg.Add(len(urls))
 	for _, url := range urls {
-		go func(url string){
+		go func(url string) {
 			defer wg.Done()
-			res, err := u.GetPreviewImage(url)
+			img, err := u.GetPreviewImage(url)
 			if err != nil {
 				errChan <- err
 				return
 			}
 			m.Lock()
-			result = append(result, res)
+			images = append(images, img)
 			m.Unlock()
 		}(url)
 	}
@@ -52,7 +77,7 @@ func (u *Usecase) GetPreviewImageSlice(urls []string) ([][]byte, error) {
 		return nil, fmt.Errorf("failed to download preview image")
 	}
 
-	return result, nil
+	return images, nil
 }
 
 func (u *Usecase) extractVideoID(videoURL string) (string, error) {

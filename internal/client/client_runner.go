@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	directory = "images"
+	directory = "../../images"
 )
 
 func main() {
@@ -38,7 +38,7 @@ func main() {
 		log.Fatalf("could not create directory: %v", err)
 	}
 
-	if *async {
+	if async {
 		req := &pb.GetPreviewImageSliceRequest{Urls: flag.Args()}
 		resp, err := client.GetPreviewImageSlice(context.Background(), req)
 		if err != nil {
@@ -52,9 +52,10 @@ func main() {
 			log.Fatalf("could not get preview image: %v", err)
 		}
 		filePath := filepath.Join(directory, fmt.Sprintf("preview.jpg"))
+		fmt.Println(filePath)
 		err = saveImage(resp.GetImage(), filePath)
 	}
-
+	
 	fmt.Println("SUCCESS!\nImages saved in directory \"images\"")
 }
 
@@ -72,8 +73,8 @@ func saveImages(images [][]byte, directory string) error {
 	return nil
 }
 
-func makeFlags() *bool {
+func makeFlags() bool {
 	asyncFlag := flag.Bool("async", false, "")
 	flag.Parse()
-	return asyncFlag
+	return *asyncFlag
 }
