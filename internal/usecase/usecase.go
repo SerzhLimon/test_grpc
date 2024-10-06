@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sync"
 
 	"github.com/pkg/errors"
 )
@@ -26,12 +27,29 @@ func (u *Usecase) GetPreviewImage(url string) ([]byte, error) {
 
 func (u *Usecase) GetPreviewImageSlice(urls []string) ([][]byte, error) {
 	var result [][]byte
-	for _, v := range urls {
-		res, err := u.GetPreviewImage(v)
-		if err != nil {
-			return result, fmt.Errorf("failed to download preview image")
-		}
-		result = append(result, res)
+	var wg sync.WaitGroup
+	var m sync.Mutex
+	var errChan = make(chan error, len(urls))
+
+	wg.Add(len(urls))
+	for _, url := range urls {
+		go func(url string){
+			defer wg.Done()
+			res, err := u.GetPreviewImage(url)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			m.Lock()
+			result = append(result, res)
+			m.Unlock()
+		}(url)
+	}
+	wg.Wait()
+	close(errChan)
+
+	if len(errChan) > 0 {
+		return nil, fmt.Errorf("failed to download preview image")
 	}
 
 	return result, nil
@@ -55,6 +73,5 @@ func (u *Usecase) downloadImage(imageURL string) ([]byte, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to download image: %s", resp.Status)
 	}
-
 	return io.ReadAll(resp.Body)
 }

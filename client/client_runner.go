@@ -55,7 +55,7 @@ func main() {
 		err = saveImage(resp.GetImage(), filePath)
 	}
 
-	fmt.Println("Images saved in directory \"images\"")
+	fmt.Println("SUCCESS!\nImages saved in directory \"images\"")
 }
 
 func saveImage(image []byte, filePath string) error {
