@@ -20,9 +20,9 @@ func NewServer(uc *usecase.Usecase) *server {
 	}
 }
 
-func NewCore() *grpc.Server {
+func NewCore(cashe cashe.RedisCashe) *grpc.Server {
 	s := grpc.NewServer()
-	cashe := cashe.NewStorage()
+	// cashe := cashe.NewRedisCache()
 	uc := usecase.NewUsecase(cashe)
 	pb.RegisterPreviewServiceServer(s, NewServer(uc))
 	return s

@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net"
+	"time"
 
+	"github.com/SerzhLimon/test_grpc/internal/cashe"
 	"github.com/SerzhLimon/test_grpc/internal/server"
 )
 
@@ -14,7 +18,17 @@ func main() {
 		return
 	}
 
-	s := server.NewCore()
+	cashe := cashe.NewRedisCache()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err = cashe.GetClient().Ping(ctx).Err(); err != nil {
+		log.Fatalf("Could not connect to Redis: %v", err)
+	}
+	fmt.Println("Redis is running on :6379")
+
+	s := server.NewCore(*cashe)
 
 	fmt.Println("Server is running on :8000")
 	if err := s.Serve(lis); err != nil {
