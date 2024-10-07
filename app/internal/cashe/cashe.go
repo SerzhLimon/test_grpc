@@ -2,7 +2,6 @@ package cashe
 
 import (
 	"context"
-	"os"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -18,12 +17,8 @@ type RedisCashe struct {
 }
 
 func NewRedisCache() *RedisCashe {
-	redisAddr := os.Getenv("REDIS_ADDR")
-	if redisAddr == "" {
-		redisAddr = "localhost:6379"
-	}
 	client := redis.NewClient(&redis.Options{
-		Addr: redisAddr,
+		Addr: "localhost:6379",
 	})
 	return &RedisCashe{
 		client: client,
@@ -63,7 +58,7 @@ func NewStorage() *CasheMap {
 	}
 }
 
-func (c *CasheMap) Get(videoID string) ([]byte, error) {
+func (c CasheMap) Get(videoID string) ([]byte, error) {
 	value, exist := c.Storage[videoID]
 	if !exist {
 		err := errors.New("empty response")
@@ -72,7 +67,7 @@ func (c *CasheMap) Get(videoID string) ([]byte, error) {
 	return value, nil
 }
 
-func (c *CasheMap) Set(videoID string, image []byte) error {
+func (c CasheMap) Set(videoID string, image []byte) error {
 	c.Storage[videoID] = image
 	return nil
 }

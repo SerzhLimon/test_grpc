@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	directory = "../images"
+	directory = "images"
 )
 
 func main() {
