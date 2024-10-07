@@ -47,6 +47,7 @@ func (u *Usecase) GetPreviewImage(url string) ([]byte, error) {
 	if err = u.cashe.Set(videoID, image); err != nil {
 		log.Println("can't save image in storage", err)
 	}
+
 	return image, nil
 }
 

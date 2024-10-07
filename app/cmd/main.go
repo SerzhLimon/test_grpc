@@ -7,8 +7,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/SerzhLimon/test_grpc/internal/cashe"
-	"github.com/SerzhLimon/test_grpc/internal/server"
+	"github.com/SerzhLimon/test_grpc/app/internal/cashe"
+	"github.com/SerzhLimon/test_grpc/app/internal/server"
 )
 
 func main() {

@@ -2,6 +2,7 @@ package cashe
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -17,8 +18,12 @@ type RedisCashe struct {
 }
 
 func NewRedisCache() *RedisCashe {
+	redisAddr := os.Getenv("REDIS_ADDR")
+	if redisAddr == "" {
+		redisAddr = "localhost:6379"
+	}
 	client := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: redisAddr,
 	})
 	return &RedisCashe{
 		client: client,
@@ -29,7 +34,7 @@ func (c RedisCashe) Get(videoID string) ([]byte, error) {
 	result, err := c.client.Get(context.Background(), videoID).Bytes()
 	if err != nil {
 		if err == redis.Nil {
-			return nil, errors.New("empty response")
+			return nil, errors.New("not found")
 		}
 		return nil, err
 	}

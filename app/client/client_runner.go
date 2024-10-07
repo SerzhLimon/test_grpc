@@ -11,11 +11,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	pb "github.com/SerzhLimon/test_grpc/test_grpc_proto"
+	pb "github.com/SerzhLimon/test_grpc/app/test_grpc_proto"
 )
 
 const (
-	directory = "../../images"
+	directory = "../images"
 )
 
 func main() {
@@ -52,7 +52,6 @@ func main() {
 			log.Fatalf("could not get preview image: %v", err)
 		}
 		filePath := filepath.Join(directory, fmt.Sprintf("preview.jpg"))
-		fmt.Println(filePath)
 		err = saveImage(resp.GetImage(), filePath)
 	}
 	

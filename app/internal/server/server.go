@@ -5,9 +5,9 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/SerzhLimon/test_grpc/internal/cashe"
-	"github.com/SerzhLimon/test_grpc/internal/usecase"
-	pb "github.com/SerzhLimon/test_grpc/test_grpc_proto"
+	"github.com/SerzhLimon/test_grpc/app/internal/cashe"
+	"github.com/SerzhLimon/test_grpc/app/internal/usecase"
+	pb "github.com/SerzhLimon/test_grpc/app/test_grpc_proto"
 )
 
 type server struct {
@@ -22,7 +22,6 @@ func NewServer(uc *usecase.Usecase) *server {
 
 func NewCore(cashe cashe.RedisCashe) *grpc.Server {
 	s := grpc.NewServer()
-	// cashe := cashe.NewRedisCache()
 	uc := usecase.NewUsecase(cashe)
 	pb.RegisterPreviewServiceServer(s, NewServer(uc))
 	return s
