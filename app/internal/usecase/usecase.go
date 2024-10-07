@@ -35,7 +35,7 @@ func (u *Usecase) GetPreviewImage(url string) ([]byte, error) {
 	
 	image, err = u.cashe.Get(videoID)
 	if err == nil {
-		fmt.Println("return image from storage")
+		fmt.Println("-------------------------\nreturn image from storage")
 		return image, nil
 	}
 
