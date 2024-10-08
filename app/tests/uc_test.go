@@ -11,19 +11,19 @@ import (
 	uc "github.com/SerzhLimon/test_grpc/app/internal/usecase"
 )
 
-type MockCashe struct {
+type Mockcache struct {
 	GetFunc func(key string) ([]byte, error)
 	SetFunc func(key string, value []byte) error
 }
 
-func (m *MockCashe) Get(key string) ([]byte, error) {
+func (m *Mockcache) Get(key string) ([]byte, error) {
 	if m.GetFunc != nil {
 		return m.GetFunc(key)
 	}
 	return nil, errors.New("not implemented")
 }
 
-func (m *MockCashe) Set(key string, value []byte) error {
+func (m *Mockcache) Set(key string, value []byte) error {
 	if m.SetFunc != nil {
 		return m.SetFunc(key, value)
 	}
@@ -31,8 +31,8 @@ func (m *MockCashe) Set(key string, value []byte) error {
 }
 
 func TestGetPreviewImage(t *testing.T) {
-	t.Run("should download image and save to cashe", func(t *testing.T) {
-		mockCashe := &MockCashe{
+	t.Run("should download image and save to cache", func(t *testing.T) {
+		mockcache := &Mockcache{
 			GetFunc: func(key string) ([]byte, error) {
 				return nil, errors.New("not found")
 			},
@@ -42,7 +42,7 @@ func TestGetPreviewImage(t *testing.T) {
 			},
 		}
 
-		usecase := uc.NewUsecase(mockCashe)
+		usecase := uc.NewUsecase(mockcache)
 		image, err := usecase.GetPreviewImage("https://www.youtube.com/watch?v=lKrVuufVMXA")
 
 		file, err := os.Open("test_image1/preview.jpg")
@@ -58,7 +58,7 @@ func TestGetPreviewImage(t *testing.T) {
 		defer file.Close()
 		imageTest, err := io.ReadAll(file)
 
-		mockCashe := &MockCashe{
+		mockcache := &Mockcache{
 			GetFunc: func(key string) ([]byte, error) {
 				return imageTest, nil
 			},
@@ -67,7 +67,7 @@ func TestGetPreviewImage(t *testing.T) {
 			},
 		}
 
-		usecase := uc.NewUsecase(mockCashe)
+		usecase := uc.NewUsecase(mockcache)
 		image, err := usecase.GetPreviewImage("https://www.youtube.com/watch?v=lKrVuufVMXA")
 
 		assert.NoError(t, err)

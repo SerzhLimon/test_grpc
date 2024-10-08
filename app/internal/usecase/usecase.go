@@ -11,18 +11,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Cashe interface {
+type Cache interface {
 	Get(key string) ([]byte, error)
 	Set(key string, value []byte) error
 }
 
 type Usecase struct {
-	cashe Cashe
+	cache Cache
 }
 
-func NewUsecase(cashe Cashe) *Usecase {
+func NewUsecase(cache Cache) *Usecase {
 	return &Usecase{
-		cashe: cashe,
+		cache: cache,
 	}
 }
 
@@ -32,8 +32,8 @@ func (u *Usecase) GetPreviewImage(url string) ([]byte, error) {
 	if err != nil {
 		return image, fmt.Errorf("invalid YouTube URL")
 	}
-	
-	image, err = u.cashe.Get(videoID)
+
+	image, err = u.cache.Get(videoID)
 	if err == nil {
 		fmt.Println("-------------------------\nreturn image from storage")
 		return image, nil
@@ -44,7 +44,7 @@ func (u *Usecase) GetPreviewImage(url string) ([]byte, error) {
 		return image, fmt.Errorf("failed to download preview image")
 	}
 
-	if err = u.cashe.Set(videoID, image); err != nil {
+	if err = u.cache.Set(videoID, image); err != nil {
 		log.Println("can't save image in storage", err)
 	}
 

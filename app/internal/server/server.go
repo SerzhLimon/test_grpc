@@ -5,7 +5,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/SerzhLimon/test_grpc/app/internal/cashe"
+	"github.com/SerzhLimon/test_grpc/app/internal/cache"
 	"github.com/SerzhLimon/test_grpc/app/internal/usecase"
 	pb "github.com/SerzhLimon/test_grpc/app/test_grpc_proto"
 )
@@ -20,9 +20,9 @@ func NewServer(uc *usecase.Usecase) *server {
 	}
 }
 
-func NewCore(cashe cashe.RedisCashe) *grpc.Server {
+func NewCore(cache cache.Rediscache) *grpc.Server {
 	s := grpc.NewServer()
-	uc := usecase.NewUsecase(cashe)
+	uc := usecase.NewUsecase(cache)
 	pb.RegisterPreviewServiceServer(s, NewServer(uc))
 	return s
 }
